@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DATA EQUIPMENT</title>
+</head>
+<body>
+  <!-- Kill switch -->
+  <div id="license-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h2>Servicio desactivado</h2>
+      <p>Contacte al administrador para habilitar nuevamente la aplicación.</p>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <main id="login-view" class="centered">
+    <div class="card login-card">
+      <div class="logo">
+        <!-- icono industrial -->
+        <svg viewBox="0 0 64 64"><path d="M6 50h52v6H6zM10 46V26l8 6v14h4V22l8 6v18h4V30l10-6v22h4V18h4v28z"></path></svg>
+        <h1>DATA EQUIPMENT</h1>
+      </div>
+      <form id="login-form">
+        <label>Usuario <input type="text" id="username" required></label>
+        <label>Contraseña <input type="password" id="password" required></label>
+        <button type="submit" class="btn primary">Acceder</button>
+        <p class="helper">Demo: operaciones / planta2025</p>
+      </form>
+    </div>
+  </main>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div class="brand">
+        <svg viewBox="0 0 64 64"><path d="M6 50h52v6H6zM10 46V26l8 6v14h4V22l8 6v18h4V30l10-6v22h4V18h4v28z"></path></svg>
+        <h2>DATA EQUIPMENT</h2>
+      </div>
+      <div class="time"><span id="datetime"></span></div>
+      <button id="logout-btn" class="btn ghost">Salir</button>
+    </header>
+
+    <section class="container">
+      <form id="equipment-form">
+        <!-- Operador -->
+        <div class="grid two">
+          <label>Nombre y Apellido <input type="text" id="operador" required></label>
+          <label>Legajo <input type="text" id="legajo" required></label>
+        </div>
+
+        <!-- Tipo de equipo -->
+        <div class="grid three">
+          <label>Tipo de Equipo
+            <select id="tipo-equipo" required>
+              <option disabled selected>Seleccione...</option>
+              <option>Motocompresor</option><option>Recompresor</option>
+              <option>Turbo Expansor</option><option>Bomba</option>
+              <option>Separador</option><option>Intercambiador</option>
+              <option>Filtro</option><option>Puente de Medición</option>
+              <option>Torre</option><option>Horno</option>
+              <option>Aero Enfriador</option><option>Compresor de Aire</option>
+              <option>Válvula</option><option>Fosa</option>
+              <option>Tanque</option><option>Ablandador</option>
+              <option>Cisterna</option><option>CCM</option>
+              <option>Shelter</option><option>Detectores y Pulsadores</option>
+              <option>Compresores de Propano</option><option>Regenerador</option>
+              <option>Cromatógrafo</option><option>Flare</option>
+              <option>Otros Equipos o Instalaciones</option>
+            </select>
+          </label>
+          <label id="estado-wrap">Estado
+            <select id="estado">
+              <option disabled selected>Seleccione...</option>
+              <option>Operativo</option><option>Mantenimiento</option>
+              <option>Fuera de servicio</option><option>Stand by</option>
+            </select>
+          </label>
+          <label id="ubicacion-wrap">Ubicación
+            <input type="text" id="ubicacion"/>
+          </label>
+        </div>
+
+        <!-- Datos generales -->
+        <div id="general-fields">
+          <label>Número de Serie <input type="text" id="numero-serie"></label>
+          <label>Fotos del Equipo <input type="file" id="fotos" accept="image/*" capture="environment" multiple></label>
+          <label>Observaciones <textarea id="observaciones"></textarea></label>
+        </div>
+
+        <!-- TANQUES -->
+        <div id="tanques-section" class="hidden">
+          <h3>Lecturas de Tanques</h3>
+          <div id="tanques-container"></div>
+        </div>
+
+        <!-- Botones -->
+        <div class="actions">
+          <button type="button" id="save-btn" class="btn primary">Generar Informe PDF</button>
+          <button type="button" id="share-btn" class="btn">Compartir (WhatsApp / Email)</button>
+          <p id="save-status"></p>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>
