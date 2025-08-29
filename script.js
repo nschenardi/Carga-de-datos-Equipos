@@ -1,137 +1,145 @@
-// Kill switch remoto (archivo JSON en GitHub con { "active": true/false })
-const LICENSE_URL = "https://raw.githubusercontent.com/tuusuario/tu-repo/main/license.json";
+// ===================== KILL SWITCH REMOTO =====================
+const LICENSE_URL = "https://raw.githubusercontent.com/nschenardi/Carga-de-datos-Equipos/main/license.json";
 
-// Validación login
-const loginForm = document.getElementById("login-form");
-const app = document.getElementById("app");
-const loginView = document.getElementById("login-view");
-loginForm.addEventListener("submit", e => {
-  e.preventDefault();
-  const user = document.getElementById("username").value;
-  const pass = document.getElementById("password").value;
-  if(user==="operaciones" && pass==="planta2025"){
-    loginView.classList.add("hidden");
-    app.classList.remove("hidden");
+async function checkLicense() {
+  try {
+    const response = await fetch(LICENSE_URL, { cache: "no-cache" });
+    const data = await response.json();
+    if (data.active === true) {
+      document.getElementById("login-view").classList.remove("hidden");
+      document.getElementById("license-overlay").classList.add("hidden");
+    } else {
+      document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>🚫 Servicio desactivado. Contacte al administrador</h1>";
+    }
+  } catch (err) {
+    console.error("Error verificando licencia:", err);
+    document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>⚠️ Error de conexión con el servidor</h1>";
+  }
+}
+
+checkLicense();
+
+// ===================== LOGIN =====================
+const VALID_USER = "operaciones";
+const VALID_PASS = "planta2025";
+
+document.getElementById("login-btn").addEventListener("click", function() {
+  const username = document.getElementById("login-user").value;
+  const password = document.getElementById("login-pass").value;
+
+  if(username === VALID_USER && password === VALID_PASS) {
+    document.getElementById("login-view").classList.add("hidden");
+    document.getElementById("app-view").classList.remove("hidden");
+    initApp();
   } else {
     alert("Usuario o contraseña incorrectos");
   }
 });
 
-// Logout
-document.getElementById("logout-btn").onclick = ()=> {
-  app.classList.add("hidden");
-  loginView.classList.remove("hidden");
-};
+// ===================== APP PRINCIPAL =====================
+function initApp() {
+  document.getElementById("fecha-hora").innerText = new Date().toLocaleString();
 
-// Fecha y hora en header
-function updateDateTime(){
-  document.getElementById("datetime").textContent =
-    new Date().toLocaleString();
-}
-setInterval(updateDateTime,1000);
-updateDateTime();
+  const tipoEquipoSelect = document.getElementById("tipo-equipo");
+  const equipoContainer = document.getElementById("equipo-container");
 
-// Mostrar/ocultar campos según equipo
-const tipoEquipo = document.getElementById("tipo-equipo");
-const generalFields = document.getElementById("general-fields");
-const tanquesSection = document.getElementById("tanques-section");
-const tanquesContainer = document.getElementById("tanques-container");
+  // Mostrar campos según tipo de equipo
+  tipoEquipoSelect.addEventListener("change", function() {
+    const tipo = this.value;
+    equipoContainer.innerHTML = ""; // limpiar
 
-tipoEquipo.addEventListener("change", ()=>{
-  if(tipoEquipo.value==="Tanque"){
-    generalFields.classList.add("hidden");
-    tanquesSection.classList.remove("hidden");
-    generarTanques();
-  } else {
-    generalFields.classList.remove("hidden");
-    tanquesSection.classList.add("hidden");
-    tanquesContainer.innerHTML="";
-  }
-});
+    if(tipo === "Tanque") {
+      // Mostrar campos especiales de tanques
+      const tanques = [
+        {nombre:"Tanque 1", tipo:"Propano Fuera de Especificación", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 2", tipo:"Butano Fuera de Especificación", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 3", tipo:"Butano", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 4", tipo:"Butano", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 5", tipo:"Propano", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 6", tipo:"Propano", campos:["Nivel (cm)"]},
+        {nombre:"Tanque 7", tipo:"Gasolina", campos:["Nivel (cm)"]}
+      ];
 
-// Generar campos de tanques
-function generarTanques(){
-  const tanques = [
-    "Tanque 1 — Propano Fuera de Especificación",
-    "Tanque 2 — Butano Fuera de Especificación",
-    "Tanque 3 — Butano","Tanque 4 — Butano",
-    "Tanque 5 — Propano","Tanque 6 — Propano",
-    "Tanque 7 — Gasolina"
-  ];
-  tanquesContainer.innerHTML="";
-  tanques.forEach((nombre,i)=>{
-    const idx = i+1;
-    let html = `<div class="card" style="margin-bottom:1rem;">
-      <h4>${nombre}</h4>
-      <label>Nivel (cm)<input type="number" id="t${idx}-nivel"></label>`;
-    if(idx<7){
-      html+=`<label>Presión (kg/cm²)<input type="number" id="t${idx}-presion"></label>
-             <label>Temperatura (°C)<input type="number" id="t${idx}-temp"></label>`;
+      tanques.forEach(t => {
+        const div = document.createElement("div");
+        div.classList.add("tanque-card");
+        div.innerHTML = `<h3>${t.nombre} (${t.tipo})</h3>`;
+        t.campos.forEach(c => {
+          div.innerHTML += `<label>${c}: <input type="number" class="input-tanque" placeholder="${c}"></label>`;
+        });
+        equipoContainer.appendChild(div);
+      });
+
+    } else {
+      // Mostrar campos normales
+      equipoContainer.innerHTML = `
+        <label>Número de Serie: <input type="text" id="num-serie"></label>
+        <label>Ubicación: <input type="text" id="ubicacion"></label>
+        <label>Estado: 
+          <select id="estado">
+            <option value="Activo">Activo</option>
+            <option value="Stand by">Stand by</option>
+            <option value="Fuera de Servicio">Fuera de Servicio</option>
+          </select>
+        </label>
+        <label>Observaciones: <textarea id="observaciones"></textarea></label>
+        <label>Foto del Equipo: <input type="file" accept="image/*" id="foto-equipo" capture="camera"></label>
+      `;
     }
-    html+=`</div>`;
-    tanquesContainer.innerHTML+=html;
+  });
+
+  // Botón generar PDF
+  document.getElementById("btn-generar-pdf").addEventListener("click", function() {
+    generarPDF();
+  });
+
+  // Botón enviar WhatsApp
+  document.getElementById("btn-whatsapp").addEventListener("click", function() {
+    enviarWhatsApp();
+  });
+
+  // Botón enviar Email
+  document.getElementById("btn-email").addEventListener("click", function() {
+    enviarEmail();
   });
 }
 
-// Generar PDF
-document.getElementById("save-btn").onclick = async ()=>{
+// ===================== FUNCIONES =====================
+function generarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  let y=10;
+
   doc.setFontSize(16);
-  doc.text("Informe de Equipo",10,y); y+=10;
+  doc.text("Informe de Carga de Equipos Industriales", 10, 10);
   doc.setFontSize(12);
-  doc.text("Fecha y hora: "+new Date().toLocaleString(),10,y); y+=10;
+  doc.text(`Fecha y Hora: ${new Date().toLocaleString()}`, 10, 20);
 
-  // Operador
-  doc.text("Operador: "+document.getElementById("operador").value,10,y); y+=10;
-  doc.text("Legajo: "+document.getElementById("legajo").value,10,y); y+=10;
+  const operador = document.getElementById("nombre-operador").value;
+  const legajo = document.getElementById("legajo-operador").value;
+  doc.text(`Operador: ${operador} | Legajo: ${legajo}`, 10, 30);
 
-  // Tipo equipo
-  doc.text("Equipo: "+tipoEquipo.value,10,y); y+=10;
+  const tipo = document.getElementById("tipo-equipo").value;
+  doc.text(`Tipo de Equipo: ${tipo}`, 10, 40);
 
-  if(tipoEquipo.value==="Tanque"){
-    for(let i=1;i<=7;i++){
-      doc.text(`Tanque ${i}`,10,y); y+=8;
-      doc.text("Nivel: "+(document.getElementById(`t${i}-nivel`).value||"-"),15,y); y+=8;
-      if(i<7){
-        doc.text("Presión: "+(document.getElementById(`t${i}-presion`).value||"-"),15,y); y+=8;
-        doc.text("Temperatura: "+(document.getElementById(`t${i}-temp`).value||"-"),15,y); y+=8;
-      }
-    }
+  if(tipo === "Tanque") {
+    const inputs = document.querySelectorAll(".input-tanque");
+    inputs.forEach((inp, i) => {
+      doc.text(`Tanque ${i+1}: ${inp.value}`, 10, 50 + i*10);
+    });
   } else {
-    doc.text("Número de Serie: "+(document.getElementById("numero-serie").value||"-"),10,y); y+=10;
-    doc.text("Ubicación: "+(document.getElementById("ubicacion").value||"-"),10,y); y+=10;
-    doc.text("Estado: "+(document.getElementById("estado").value||"-"),10,y); y+=10;
-    doc.text("Observaciones: "+(document.getElementById("observaciones").value||"-"),10,y); y+=10;
-  }
+    const numSerie = document.getElementById("num-serie").value;
+    const ubicacion = document.getElementById("ubicacion").value;
+    const estado = document.getElementById("estado").value;
+    const obs = document.getElementById("observaciones").value;
 
-  doc.save("informe_equipo.pdf");
-  document.getElementById("save-status").textContent="Informe generado y descargado";
-};
+    doc.text(`Número de Serie: ${numSerie}`, 10, 50);
+    doc.text(`Ubicación: ${ubicacion}`, 10, 60);
+    doc.text(`Estado: ${estado}`, 10, 70);
+    doc.text(`Observaciones: ${obs}`, 10, 80);
 
-// Compartir vía WhatsApp o Email
-document.getElementById("share-btn").onclick = ()=>{
-  const text="Informe generado desde DATA EQUIPMENT";
-  const wa="https://wa.me/?text="+encodeURIComponent(text);
-  const mail="mailto:?subject=Informe Equipo&body="+encodeURIComponent(text);
-  if(confirm("¿Compartir por WhatsApp?")){
-    window.open(wa,"_blank");
-  } else {
-    window.location.href=mail;
-  }
-};
-
-// Kill switch remoto
-async function checkLicense(){
-  try {
-    const res = await fetch(LICENSE_URL);
-    const data = await res.json();
-    if(!data.active){
-      document.getElementById("license-overlay").classList.remove("hidden");
-    }
-  } catch(e){
-    console.warn("No se pudo verificar licencia",e);
-  }
-}
-checkLicense();
+    const foto = document.getElementById("foto-equipo").files[0];
+    if(foto) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        doc.addImage(e.target.result, 'JPEG', 10, 90, 50, 50);
+        doc.save(`Informe_${tipo}_${new Date().toISOString()}.
